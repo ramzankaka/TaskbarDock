@@ -1,0 +1,218 @@
+<Window x:Class="TaskbarDock.UI.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:conv="clr-namespace:TaskbarDock.UI.Converters"
+        mc:Ignorable="d"
+        Title="TaskbarDock Settings"
+        Height="620" Width="820"
+        WindowStartupLocation="CenterScreen"
+        Background="#18181A"
+        Foreground="#E0E0E0">
+    
+    <Window.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+        
+        <Style TargetType="TabItem">
+            <Setter Property="Foreground" Value="#A0A0A0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Border" Background="Transparent" BorderThickness="0,0,0,2" BorderBrush="Transparent" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter ContentSource="Header"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Foreground" Value="#0078D4"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#0078D4"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#2A2A2E"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#40FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,6"/>
+        </Style>
+
+        <Style TargetType="Slider">
+            <Setter Property="Margin" Value="0,4,0,10"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#202024" Padding="20,15" BorderBrush="#30FFFFFF" BorderThickness="0,0,0,1">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="TaskbarDock" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF"/>
+                    <TextBlock Text="— macOS Dock for Windows 11" FontSize="14" Foreground="#888888" Margin="10,4,0,0"/>
+                </StackPanel>
+                <Button Content="Switch Mode" HorizontalAlignment="Right" Click="OnToggleModeClicked" Background="#0078D4" BorderBrush="#005A9E"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Tabs -->
+        <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0" Margin="15,10">
+            <!-- General Tab -->
+            <TabItem Header="General">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="10">
+                    <StackPanel>
+                        <TextBlock Text="Mode &amp; Startup" FontSize="16" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,8"/>
+                        <CheckBox x:Name="ChkStartup" Content="Start TaskbarDock automatically with Windows" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
+                        <CheckBox x:Name="ChkMinimizeToTray" Content="Minimize to system tray when closed" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
+                        
+                        <TextBlock Text="Global Shortcut" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,15,0,4"/>
+                        <TextBlock Text="Press Ctrl + Alt + D at any time to instantly toggle between Windows Taskbar and macOS Dock." Foreground="#999999" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Dock Appearance Tab -->
+            <TabItem Header="Dock &amp; Magnification">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="10">
+                    <StackPanel>
+                        <TextBlock Text="Visual Customization" FontSize="16" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,8"/>
+                        
+                        <TextBlock Text="Base Icon Size (px)" Foreground="#CCCCCC" Margin="0,5,0,2"/>
+                        <DockPanel>
+                            <TextBlock Text="{Binding ElementName=SliderIconSize, Path=Value, StringFormat={}{0:F0} px}" Width="50" DockPanel.Dock="Right" Foreground="#0078D4"/>
+                            <Slider x:Name="SliderIconSize" Minimum="36" Maximum="96" Value="56" ValueChanged="OnSettingChanged"/>
+                        </DockPanel>
+
+                        <CheckBox x:Name="ChkMagnification" Content="Enable Hover Magnification" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
+                        
+                        <TextBlock Text="Maximum Magnification Scale" Foreground="#CCCCCC" Margin="0,5,0,2"/>
+                        <DockPanel>
+                            <TextBlock Text="{Binding ElementName=SliderMaxScale, Path=Value, StringFormat={}{0:F2}x}" Width="50" DockPanel.Dock="Right" Foreground="#0078D4"/>
+                            <Slider x:Name="SliderMaxScale" Minimum="1.0" Maximum="2.2" Value="1.65" ValueChanged="OnSettingChanged"/>
+                        </DockPanel>
+
+                        <TextBlock Text="Dock Opacity" Foreground="#CCCCCC" Margin="0,5,0,2"/>
+                        <DockPanel>
+                            <TextBlock Text="{Binding ElementName=SliderOpacity, Path=Value, StringFormat={}{0:P0}}" Width="50" DockPanel.Dock="Right" Foreground="#0078D4"/>
+                            <Slider x:Name="SliderOpacity" Minimum="0.3" Maximum="1.0" Value="0.88" ValueChanged="OnSettingChanged"/>
+                        </DockPanel>
+
+                        <TextBlock Text="Corner Radius" Foreground="#CCCCCC" Margin="0,5,0,2"/>
+                        <DockPanel>
+                            <TextBlock Text="{Binding ElementName=SliderRadius, Path=Value, StringFormat={}{0:F0} px}" Width="50" DockPanel.Dock="Right" Foreground="#0078D4"/>
+                            <Slider x:Name="SliderRadius" Minimum="0" Maximum="32" Value="20" ValueChanged="OnSettingChanged"/>
+                        </DockPanel>
+
+                        <TextBlock Text="Bottom Spacing (px)" Foreground="#CCCCCC" Margin="0,5,0,2"/>
+                        <DockPanel>
+                            <TextBlock Text="{Binding ElementName=SliderBottomSpacing, Path=Value, StringFormat={}{0:F0} px}" Width="50" DockPanel.Dock="Right" Foreground="#0078D4"/>
+                            <Slider x:Name="SliderBottomSpacing" Minimum="0" Maximum="30" Value="10" ValueChanged="OnSettingChanged"/>
+                        </DockPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Behavior Tab -->
+            <TabItem Header="Behavior">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="10">
+                    <StackPanel>
+                        <TextBlock Text="Dock Behavior" FontSize="16" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,8"/>
+                        
+                        <CheckBox x:Name="ChkAutoHide" Content="Auto-Hide Dock (reveal on bottom screen edge touch)" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
+                        <CheckBox x:Name="ChkActivateRunning" Content="Bring running app window to foreground on click" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
+                        <CheckBox x:Name="ChkMinimizeOnSecondClick" Content="Minimize active window when clicked again" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
+                        <CheckBox x:Name="ChkShowIndicators" Content="Show running application indicator dots" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
+                        <CheckBox x:Name="ChkBounceOnLaunch" Content="Bounce icon on launch" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Applications Tab -->
+            <TabItem Header="Applications">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <ListBox x:Name="ListDockApps" Background="#202024" BorderBrush="#30FFFFFF" Foreground="#FFFFFF">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="32"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Grid.Column="0" Source="{Binding IconImage}" Width="24" Height="24" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding DisplayName}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding ExecutablePath}" Foreground="#888888" VerticalAlignment="Center" FontSize="11"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button Content="Add App..." Click="OnAddAppClicked" Margin="0,0,8,0"/>
+                        <Button Content="Remove" Click="OnRemoveAppClicked" Margin="0,0,8,0"/>
+                        <Button Content="Move Up" Click="OnMoveUpClicked" Margin="0,0,8,0"/>
+                        <Button Content="Move Down" Click="OnMoveDownClicked" Margin="0,0,8,0"/>
+                        <Button Content="Reset Defaults" Click="OnResetAppsClicked"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- Advanced / Safety Tab -->
+            <TabItem Header="Safety &amp; Advanced">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="10">
+                    <StackPanel>
+                        <TextBlock Text="Emergency Recovery &amp; Diagnostics" FontSize="16" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,8"/>
+                        <TextBlock Text="If you ever encounter an issue or taskbar visibility problem, use the safe recovery actions below:" Foreground="#AAAAAA" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                        
+                        <Button Content="🛡 Restore Windows Taskbar Immediately" Click="OnEmergencyRestoreClicked" Background="#802020" BorderBrush="#A03030" Padding="14,8" Margin="0,0,0,10"/>
+                        <Button Content="🔄 Restart Windows Explorer" Click="OnRestartExplorerClicked" Padding="14,8" Margin="0,0,0,10"/>
+                        <Button Content="📁 Open Logs Directory" Click="OnOpenLogsClicked" Padding="14,8" Margin="0,0,0,10"/>
+                        <Button Content="⚙ Reset All Settings to Factory Defaults" Click="OnResetAllClicked" Padding="14,8"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="#202024" Padding="15,10" BorderBrush="#30FFFFFF" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Close" Click="OnCloseClicked" Width="90"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,32 @@
+﻿# Build Output Folders
+bin/
+obj/
+
+# Temporary Distribution Folders
+dist/
+self_contained_dist/
+
+# Visual Studio Files
+.vs/
+*.user
+*.suo
+
+# Runtime State & Logs
+*.log
+recovery_state.json
+settings.json
+settings.json.bak
+
+# Python Helper Scripts
+*.py
+
+# Debug Symbols
+*.pdb
+
+# NuGet Package Cache
+packages/
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
