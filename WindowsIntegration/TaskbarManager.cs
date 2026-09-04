@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using TaskbarDock.Diagnostics;
 using static TaskbarDock.WindowsIntegration.NativeMethods;
 
@@ -11,8 +12,18 @@ namespace TaskbarDock.WindowsIntegration
     {
         private static readonly object _lock = new();
         private bool _isTaskbarHidden;
+        private readonly DispatcherTimer _suppressionTimer;
 
         public bool IsTaskbarHidden => _isTaskbarHidden;
+
+        public TaskbarManager()
+        {
+            _suppressionTimer = new DispatcherTimer(DispatcherPriority.Normal)
+            {
+                Interval = TimeSpan.FromMilliseconds(400)
+            };
+            _suppressionTimer.Tick += (s, e) => EnforceTaskbarHidden();
+        }
 
         public List<IntPtr> FindAllTaskbarHandles()
         {
@@ -46,22 +57,12 @@ namespace TaskbarDock.WindowsIntegration
                 try
                 {
                     Logger.Info("Hiding Windows Taskbar...");
-                    var handles = FindAllTaskbarHandles();
-                    if (handles.Count == 0)
-                    {
-                        Logger.Warn("No taskbar window handles found to hide.");
-                        return false;
-                    }
-
-                    foreach (var h in handles)
-                    {
-                        ShowWindow(h, SW_HIDE);
-                        SetWindowPos(h, IntPtr.Zero, 0, 0, 0, 0,
-                            SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_HIDEWINDOW);
-                    }
-
                     _isTaskbarHidden = true;
-                    Logger.Info($"Windows Taskbar hidden successfully on {handles.Count} displays.");
+                    _suppressionTimer.Start();
+
+                    EnforceTaskbarHidden();
+
+                    Logger.Info("Windows Taskbar suppression active.");
                     return true;
                 }
                 catch (Exception ex)
@@ -72,6 +73,29 @@ namespace TaskbarDock.WindowsIntegration
             }
         }
 
+        private void EnforceTaskbarHidden()
+        {
+            if (!_isTaskbarHidden) return;
+
+            try
+            {
+                var handles = FindAllTaskbarHandles();
+                foreach (var h in handles)
+                {
+                    if (IsWindowVisible(h))
+                    {
+                        ShowWindow(h, SW_HIDE);
+                        SetWindowPos(h, IntPtr.Zero, 0, 0, 0, 0,
+                            SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_HIDEWINDOW);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn("Error during taskbar suppression check", ex);
+            }
+        }
+
         public bool RestoreTaskbar()
         {
             lock (_lock)
@@ -79,6 +103,9 @@ namespace TaskbarDock.WindowsIntegration
                 try
                 {
                     Logger.Info("Restoring Windows Taskbar...");
+                    _isTaskbarHidden = false;
+                    _suppressionTimer.Stop();
+
                     var handles = FindAllTaskbarHandles();
                     if (handles.Count == 0)
                     {
@@ -95,7 +122,6 @@ namespace TaskbarDock.WindowsIntegration
                         RedrawWindow(h, IntPtr.Zero, IntPtr.Zero, RDW_INVALIDATE | RDW_INTERNALPAINT | RDW_ALLCHILDREN | RDW_UPDATENOW);
                     }
 
-                    _isTaskbarHidden = false;
                     Logger.Info($"Windows Taskbar restored successfully on {handles.Count} displays.");
                     return true;
                 }

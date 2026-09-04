@@ -5,6 +5,7 @@ obj/
 # Temporary Distribution Folders
 dist/
 self_contained_dist/
+*.zip
 
 # Visual Studio Files
 .vs/
