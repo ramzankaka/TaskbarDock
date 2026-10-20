@@ -106,6 +106,14 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="10">
                     <StackPanel>
                         <TextBlock Text="Visual Customization" FontSize="16" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,8"/>
+
+                        <TextBlock Text="Dock Theme" Foreground="#CCCCCC" Margin="0,5,0,4"/>
+                        <ComboBox x:Name="ComboTheme" Background="#2A2A2E" Foreground="#FFFFFF" Padding="8,6" Margin="0,0,0,12" SelectionChanged="OnSettingChanged">
+                            <ComboBoxItem Content="Classic macOS (Dark Glass)" Tag="Current"/>
+                            <ComboBoxItem Content="Glassy Liquid Modern" Tag="GlassyLiquid"/>
+                            <ComboBoxItem Content="Translucent Dark" Tag="TranslucentDark"/>
+                            <ComboBoxItem Content="Translucent White" Tag="TranslucentWhite"/>
+                        </ComboBox>
                         
                         <TextBlock Text="Base Icon Size (px)" Foreground="#CCCCCC" Margin="0,5,0,2"/>
                         <DockPanel>
@@ -148,11 +156,12 @@
                     <StackPanel>
                         <TextBlock Text="Dock Behavior" FontSize="16" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,8"/>
                         
-                        <CheckBox x:Name="ChkAutoHide" Content="Auto-Hide Dock (reveal on bottom screen edge touch)" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
+                        <CheckBox x:Name="ChkSmartAutoHide" Content="Always show on desktop (only auto-hide when windows are open)" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
+                        <CheckBox x:Name="ChkAutoHide" Content="Always Auto-Hide Dock (reveal on bottom screen edge touch)" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
                         <CheckBox x:Name="ChkActivateRunning" Content="Bring running app window to foreground on click" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
                         <CheckBox x:Name="ChkMinimizeOnSecondClick" Content="Minimize active window when clicked again" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
                         <CheckBox x:Name="ChkShowIndicators" Content="Show running application indicator dots" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
-                        <CheckBox x:Name="ChkBounceOnLaunch" Content="Bounce icon on launch" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
+                        <CheckBox x:Name="ChkBounceOnLaunch" Content="Bounce icon on launch (macOS style)" Checked="OnSettingChanged" Unchecked="OnSettingChanged"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

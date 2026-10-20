@@ -45,7 +45,7 @@
     </ToolTipService.ToolTip>
 
     <UserControl.ContextMenu>
-        <ContextMenu Background="#F0202020" Foreground="#FFFFFF" BorderBrush="#40FFFFFF" BorderThickness="1">
+        <ContextMenu x:Name="ItemContextMenu" Opened="OnContextMenuOpened" Background="#F0202024" Foreground="#FFFFFF" BorderBrush="#40FFFFFF" BorderThickness="1">
             <ContextMenu.Resources>
                 <Style TargetType="MenuItem">
                     <Setter Property="Foreground" Value="#FFFFFF"/>
@@ -66,10 +66,14 @@
                     </Setter>
                 </Style>
             </ContextMenu.Resources>
+            <MenuItem x:Name="MenuTitle" Header="{Binding DisplayName}" FontWeight="Bold" IsEnabled="False" Foreground="#88FFFFFF"/>
+            <Separator Background="#25FFFFFF"/>
             <MenuItem Header="Open" Click="OnMenuOpen"/>
             <MenuItem Header="Open in New Window" Click="OnMenuOpenNew"/>
-            <Separator Background="#30FFFFFF"/>
-            <MenuItem Header="Remove from Dock" Click="OnMenuRemove"/>
+            <Separator Background="#25FFFFFF"/>
+            <MenuItem x:Name="MenuPinToggle" Header="Pin to Dock" Click="OnMenuPinToggle"/>
+            <Separator Background="#25FFFFFF"/>
+            <MenuItem x:Name="MenuClose" Header="Close Window" Click="OnMenuClose"/>
         </ContextMenu>
     </UserControl.ContextMenu>
 
@@ -79,16 +83,9 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Icon container with smooth bounce animation -->
+        <!-- Clean Icon container firmly positioned with no bouncing -->
         <Grid x:Name="IconContainer" Grid.Row="0" Width="{Binding CurrentSize}" Height="{Binding CurrentSize}"
-              RenderTransformOrigin="0.5,1.0">
-            <Grid.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform x:Name="BounceScale" ScaleX="1.0" ScaleY="1.0"/>
-                    <TranslateTransform x:Name="BounceTranslate" Y="0"/>
-                </TransformGroup>
-            </Grid.RenderTransform>
-
+              VerticalAlignment="Bottom" HorizontalAlignment="Center">
             <Image Source="{Binding IconImage}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Margin="2">
                 <Image.Effect>
                     <DropShadowEffect BlurRadius="8" ShadowDepth="2" Direction="270" Opacity="0.35"/>
@@ -97,12 +94,12 @@
         </Grid>
 
         <!-- macOS Running Indicator Dot -->
-        <Ellipse Grid.Row="1" Width="4" Height="4" Margin="0,3,0,1"
+        <Ellipse x:Name="RunningDot" Grid.Row="1" Width="4.5" Height="4.5" Margin="0,3,0,1"
                  Fill="#FFFFFF"
                  HorizontalAlignment="Center"
                  Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}">
             <Ellipse.Effect>
-                <DropShadowEffect BlurRadius="4" ShadowDepth="0" Color="#FFFFFF" Opacity="0.8"/>
+                <DropShadowEffect x:Name="DotShadow" BlurRadius="5" ShadowDepth="0" Color="#FFFFFF" Opacity="0.95"/>
             </Ellipse.Effect>
         </Ellipse>
     </Grid>

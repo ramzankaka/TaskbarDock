@@ -11,6 +11,8 @@ namespace TaskbarDock.Dock
     {
         public event Action<DockItem>? ItemClicked;
         public event Action<DockItem>? ItemRemoveRequested;
+        public event Action<DockItem>? ItemPinToggleRequested;
+        public event Action<DockItem>? ItemCloseRequested;
 
         public DockItem Item => (DockItem)DataContext;
 
@@ -23,25 +25,38 @@ namespace TaskbarDock.Dock
         {
             if (DataContext is DockItem item)
             {
-                PlayLaunchBounce();
                 ItemClicked?.Invoke(item);
             }
         }
 
         public void PlayLaunchBounce()
         {
+            // Bouncing disabled per user request: icons remain firmly grounded and active indicator dot displays underneath
+        }
+
+        public void PlayScalePop()
+        {
+            // Scale pop disabled per user request
+        }
+
+        public void SetDotTheme(System.Windows.Media.Brush fill, System.Windows.Media.Color glow)
+        {
             try
             {
-                var anim = new DoubleAnimationUsingKeyFrames();
-                anim.KeyFrames.Add(new LinearDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.Zero)));
-                anim.KeyFrames.Add(new SplineDoubleKeyFrame(-18, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(150)), new KeySpline(0.1, 0.9, 0.2, 1.0)));
-                anim.KeyFrames.Add(new SplineDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(300)), new KeySpline(0.8, 0.0, 0.9, 0.2)));
-                anim.KeyFrames.Add(new SplineDoubleKeyFrame(-10, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(420)), new KeySpline(0.1, 0.9, 0.2, 1.0)));
-                anim.KeyFrames.Add(new SplineDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(550)), new KeySpline(0.8, 0.0, 0.9, 0.2)));
-
-                BounceTranslate.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, anim);
+                RunningDot.Fill = fill;
+                DotShadow.Color = glow;
             }
             catch { }
+        }
+
+        private void OnContextMenuOpened(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is DockItem item)
+            {
+                MenuTitle.Header = item.DisplayName;
+                MenuPinToggle.Header = item.IsPinned ? "Unpin from Dock" : "Pin to Dock";
+                MenuClose.Visibility = item.IsRunning ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         private void OnMenuOpen(object sender, RoutedEventArgs e)
@@ -54,6 +69,18 @@ namespace TaskbarDock.Dock
         {
             if (DataContext is DockItem item)
                 ApplicationLauncher.LaunchNewInstance(item);
+        }
+
+        private void OnMenuPinToggle(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is DockItem item)
+                ItemPinToggleRequested?.Invoke(item);
+        }
+
+        private void OnMenuClose(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is DockItem item)
+                ItemCloseRequested?.Invoke(item);
         }
 
         private void OnMenuRemove(object sender, RoutedEventArgs e)

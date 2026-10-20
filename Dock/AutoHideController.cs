@@ -5,6 +5,7 @@ using System.Windows.Interop;
 using System.Windows.Threading;
 using TaskbarDock.Diagnostics;
 using TaskbarDock.Models;
+using TaskbarDock.WindowsIntegration;
 using static TaskbarDock.WindowsIntegration.NativeMethods;
 
 namespace TaskbarDock.Dock
@@ -16,9 +17,12 @@ namespace TaskbarDock.Dock
         private bool _isCurrentlyHidden;
         private DateTime _lastEdgeTouchTime = DateTime.MinValue;
         private DateTime _lastDockLeaveTime = DateTime.MinValue;
+        private DateTime _lastWindowCheckTime = DateTime.MinValue;
+        private bool _hasVisibleWindows = false;
         private IntPtr _hwnd = IntPtr.Zero;
 
         public bool AutoHideEnabled { get; set; } = false;
+        public bool SmartDesktopAutoHide { get; set; } = true;
         public int RevealDelayMs { get; set; } = 80;
         public int HideDelayMs { get; set; } = 350;
         public double TargetBottom { get; set; }
@@ -55,13 +59,35 @@ namespace TaskbarDock.Dock
 
         private void CheckMouseProximity()
         {
-            if (!AutoHideEnabled || !_dockWindow.IsVisible) return;
+            if (!AutoHideEnabled && !SmartDesktopAutoHide) return;
+            if (!_dockWindow.IsVisible) return;
 
             if (_hwnd == IntPtr.Zero)
             {
                 var helper = new WindowInteropHelper(_dockWindow);
                 _hwnd = helper.Handle;
                 if (_hwnd == IntPtr.Zero) return;
+            }
+
+            var now = DateTime.UtcNow;
+            if ((now - _lastWindowCheckTime).TotalMilliseconds >= 250)
+            {
+                _lastWindowCheckTime = now;
+                _hasVisibleWindows = WindowManager.HasVisibleDesktopWindows(_hwnd);
+            }
+
+            // If SmartDesktopAutoHide is enabled and no application windows are open/showing on desktop:
+            // The dock must ALWAYS show on the desktop.
+            if (SmartDesktopAutoHide && !_hasVisibleWindows)
+            {
+                if (_isCurrentlyHidden)
+                {
+                    _isCurrentlyHidden = false;
+                    _lastEdgeTouchTime = DateTime.MinValue;
+                    _lastDockLeaveTime = DateTime.MinValue;
+                    VisibilityChanged?.Invoke(true);
+                }
+                return;
             }
 
             if (!GetCursorPos(out POINT pt)) return;

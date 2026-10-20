@@ -38,6 +38,18 @@ namespace TaskbarDock.UI
             ChkStartup.IsChecked = StartupManager.IsStartupEnabled();
             ChkMinimizeToTray.IsChecked = s.MinimizeToTray;
 
+            string currentTheme = s.Dock.Theme ?? "Current";
+            foreach (System.Windows.Controls.ComboBoxItem item in ComboTheme.Items)
+            {
+                if (string.Equals(item.Tag?.ToString(), currentTheme, StringComparison.OrdinalIgnoreCase))
+                {
+                    ComboTheme.SelectedItem = item;
+                    break;
+                }
+            }
+            if (ComboTheme.SelectedItem == null && ComboTheme.Items.Count > 0)
+                ComboTheme.SelectedIndex = 0;
+
             SliderIconSize.Value = s.Dock.IconSize;
             ChkMagnification.IsChecked = s.Dock.MagnificationEnabled;
             SliderMaxScale.Value = s.Dock.MaxMagnification;
@@ -45,6 +57,7 @@ namespace TaskbarDock.UI
             SliderRadius.Value = s.Dock.CornerRadius;
             SliderBottomSpacing.Value = s.Dock.BottomSpacing;
 
+            ChkSmartAutoHide.IsChecked = s.Behavior.SmartDesktopAutoHide;
             ChkAutoHide.IsChecked = s.Behavior.AutoHide;
             ChkActivateRunning.IsChecked = s.Behavior.ActivateRunningApp;
             ChkMinimizeOnSecondClick.IsChecked = s.Behavior.MinimizeOnSecondClick;
@@ -64,6 +77,11 @@ namespace TaskbarDock.UI
 
             s.MinimizeToTray = ChkMinimizeToTray.IsChecked ?? true;
 
+            if (ComboTheme.SelectedItem is System.Windows.Controls.ComboBoxItem selectedThemeItem && selectedThemeItem.Tag != null)
+            {
+                s.Dock.Theme = selectedThemeItem.Tag.ToString()!;
+            }
+
             s.Dock.IconSize = SliderIconSize.Value;
             s.Dock.MagnificationEnabled = ChkMagnification.IsChecked ?? true;
             s.Dock.MaxMagnification = SliderMaxScale.Value;
@@ -71,6 +89,7 @@ namespace TaskbarDock.UI
             s.Dock.CornerRadius = SliderRadius.Value;
             s.Dock.BottomSpacing = SliderBottomSpacing.Value;
 
+            s.Behavior.SmartDesktopAutoHide = ChkSmartAutoHide.IsChecked ?? true;
             s.Behavior.AutoHide = ChkAutoHide.IsChecked ?? false;
             s.Behavior.ActivateRunningApp = ChkActivateRunning.IsChecked ?? true;
             s.Behavior.MinimizeOnSecondClick = ChkMinimizeOnSecondClick.IsChecked ?? true;
@@ -90,20 +109,14 @@ namespace TaskbarDock.UI
         {
             var dlg = new OpenFileDialog
             {
-                Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*",
+                Filter = "Applications and Shortcuts (*.exe;*.lnk)|*.exe;*.lnk|All files (*.*)|*.*",
                 Title = "Select Application to Add to Dock"
             };
 
             if (dlg.ShowDialog() == true)
             {
-                string title = Path.GetFileNameWithoutExtension(dlg.FileName);
-                var item = new DockItem
-                {
-                    Title = title,
-                    ExecutablePath = dlg.FileName,
-                    IsPinned = true
-                };
-                _dockWindow.ItemManager.AddItem(item);
+                _dockWindow.ItemManager.AddAppByPath(dlg.FileName);
+                _dockWindow.RepositionDock();
             }
         }
 

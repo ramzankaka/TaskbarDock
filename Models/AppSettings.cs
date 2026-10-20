@@ -30,12 +30,13 @@ namespace TaskbarDock.Models
         public double CornerRadius { get; set; } = 18.0;
         public double BottomSpacing { get; set; } = 10.0;
         public bool ShadowEnabled { get; set; } = true;
-        public string Theme { get; set; } = "System"; // "System", "Dark", "Light"
+        public string Theme { get; set; } = "Current"; // "Current", "GlassyLiquid", "TranslucentDark", "TranslucentWhite"
     }
 
     public class DockBehaviorConfig
     {
         public bool AutoHide { get; set; } = false;
+        public bool SmartDesktopAutoHide { get; set; } = true; // Always show on desktop, autohide when windows open
         public int RevealDelayMs { get; set; } = 100;
         public int HideDelayMs { get; set; } = 350;
         public bool ActivateRunningApp { get; set; } = true;

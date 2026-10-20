@@ -12,6 +12,40 @@ namespace TaskbarDock.WindowsIntegration
 {
     public static class IconExtractor
     {
+        public static ImageSource? ExtractIconFromWindow(IntPtr hWnd, string? exePath)
+        {
+            try
+            {
+                if (hWnd != IntPtr.Zero)
+                {
+                    IntPtr hIcon = SendMessage(hWnd, WM_GETICON, (IntPtr)1 /* ICON_BIG */, IntPtr.Zero);
+                    if (hIcon == IntPtr.Zero)
+                        hIcon = SendMessage(hWnd, WM_GETICON, (IntPtr)2 /* ICON_SMALL2 */, IntPtr.Zero);
+                    if (hIcon == IntPtr.Zero)
+                        hIcon = SendMessage(hWnd, WM_GETICON, (IntPtr)0 /* ICON_SMALL */, IntPtr.Zero);
+
+                    if (hIcon == IntPtr.Zero)
+                        hIcon = GetClassLongPtr(hWnd, GCLP_HICON);
+                    if (hIcon == IntPtr.Zero)
+                        hIcon = GetClassLongPtr(hWnd, GCLP_HICONSM);
+
+                    if (hIcon != IntPtr.Zero)
+                    {
+                        using var icon = (Icon)Icon.FromHandle(hIcon).Clone();
+                        var bs = Imaging.CreateBitmapSourceFromHIcon(
+                            icon.Handle,
+                            Int32Rect.Empty,
+                            BitmapSizeOptions.FromEmptyOptions());
+                        bs.Freeze();
+                        return bs;
+                    }
+                }
+            }
+            catch { }
+
+            return ExtractIcon(exePath);
+        }
+
         public static ImageSource? ExtractIcon(string? path, string? systemAction = null)
         {
             try

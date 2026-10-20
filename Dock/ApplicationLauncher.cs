@@ -11,7 +11,7 @@ namespace TaskbarDock.Dock
 {
     public static class ApplicationLauncher
     {
-        public static void LaunchOrActivate(DockItem item, bool activateRunning = true, bool minimizeIfActive = true)
+        public static void LaunchOrActivate(DockItem item, bool activateRunning = true, bool minimizeIfActive = true, System.Windows.Rect? dockItemRect = null)
         {
             try
             {
@@ -22,7 +22,7 @@ namespace TaskbarDock.Dock
                     if (validHwnds.Count > 0)
                     {
                         IntPtr target = validHwnds[0];
-                        WindowManager.ActivateWindow(target, minimizeIfActive);
+                        WindowManager.ActivateWindow(target, minimizeIfActive, dockItemRect);
                         return;
                     }
                 }

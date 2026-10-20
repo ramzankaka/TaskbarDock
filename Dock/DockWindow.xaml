@@ -27,9 +27,90 @@
             <GradientStop Color="#20FFFFFF" Offset="0.5"/>
             <GradientStop Color="#15FFFFFF" Offset="1.0"/>
         </LinearGradientBrush>
+
+        <Style TargetType="ContextMenu">
+            <Setter Property="Background" Value="#E61E1E22"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#40FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.45" Color="#000000"/>
+                            </Border.Effect>
+                            <ItemsPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <ControlTemplate x:Key="SubmenuHeaderTemplate" TargetType="MenuItem">
+            <Border x:Name="Border" Background="Transparent" CornerRadius="6" Padding="12,7">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentPresenter ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center"/>
+                    <Path Grid.Column="1" Data="M 0 0 L 4 4 L 0 8 Z" Fill="#C0FFFFFF" Margin="14,0,2,0" VerticalAlignment="Center"/>
+                    <Popup x:Name="PART_Popup"
+                           AllowsTransparency="True"
+                           Focusable="False"
+                           IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                           Placement="Right"
+                           HorizontalOffset="4"
+                           VerticalOffset="-4"
+                           PopupAnimation="Fade">
+                        <Border Background="#F21E1E24" BorderBrush="#40FFFFFF" BorderThickness="1" CornerRadius="10" Padding="4">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.5" Color="#000000"/>
+                            </Border.Effect>
+                            <StackPanel IsItemsHost="True"/>
+                        </Border>
+                    </Popup>
+                </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter TargetName="Border" Property="Background" Value="#35FFFFFF"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <ControlTemplate x:Key="SubmenuItemTemplate" TargetType="MenuItem">
+            <Border x:Name="Border" Background="Transparent" CornerRadius="6" Padding="12,7">
+                <ContentPresenter ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter TargetName="Border" Property="Background" Value="#35FFFFFF"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <Style TargetType="MenuItem">
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Template" Value="{StaticResource SubmenuItemTemplate}"/>
+            <Style.Triggers>
+                <Trigger Property="Role" Value="SubmenuHeader">
+                    <Setter Property="Template" Value="{StaticResource SubmenuHeaderTemplate}"/>
+                </Trigger>
+                <Trigger Property="HasItems" Value="True">
+                    <Setter Property="Template" Value="{StaticResource SubmenuHeaderTemplate}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
-    <Grid Margin="20,10,20,15">
+    <Grid Margin="20,10,20,15" AllowDrop="True" Drop="OnDockDrop" DragOver="OnDockDragOver">
         <Grid.RenderTransform>
             <TranslateTransform x:Name="DockSlideTransform" Y="0"/>
         </Grid.RenderTransform>
@@ -43,10 +124,27 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Bottom">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="25" ShadowDepth="8" Direction="270" Opacity="0.4" Color="#000000"/>
+                <DropShadowEffect x:Name="DockDropShadow" BlurRadius="28" ShadowDepth="8" Direction="270" Opacity="0.4" Color="#000000"/>
             </Border.Effect>
 
-            <ItemsControl x:Name="DockItemsControl" ItemsSource="{Binding Items}">
+            <Border.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="➕ Add Application..." Click="OnMenuAddAppClicked"/>
+                    <Separator Background="#25FFFFFF"/>
+                    <MenuItem Header="🎨 Themes">
+                        <MenuItem Header="Classic macOS (Dark Glass)" Click="OnSelectThemeClassic"/>
+                        <MenuItem Header="Glassy Liquid Modern" Click="OnSelectThemeLiquid"/>
+                        <MenuItem Header="Translucent Dark" Click="OnSelectThemeTranslucentDark"/>
+                        <MenuItem Header="Translucent White" Click="OnSelectThemeTranslucentWhite"/>
+                    </MenuItem>
+                    <Separator Background="#25FFFFFF"/>
+                    <MenuItem Header="⚙️ Dock Settings..." Click="OnMenuSettingsClicked"/>
+                    <MenuItem Header="🔄 Switch to Windows Taskbar" Click="OnMenuSwitchModeClicked"/>
+                </ContextMenu>
+            </Border.ContextMenu>
+
+            <ItemsControl x:Name="DockItemsControl" ItemsSource="{Binding Items}"
+                          HorizontalAlignment="Center" VerticalAlignment="Bottom">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
@@ -56,6 +154,8 @@
                     <DataTemplate>
                         <dock:DockItemView Margin="4,0,4,0" 
                                           ItemClicked="OnDockItemClicked"
+                                          ItemPinToggleRequested="OnDockItemPinToggleRequested"
+                                          ItemCloseRequested="OnDockItemCloseRequested"
                                           ItemRemoveRequested="OnDockItemRemoveRequested"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

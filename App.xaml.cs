@@ -82,6 +82,8 @@ namespace TaskbarDock
             _runningAppsTracker = new RunningAppsTracker();
 
             _dockWindow = new DockWindow(_config, _itemManager, _runningAppsTracker);
+            _dockWindow.RequestOpenSettings = ShowSettings;
+            _dockWindow.RequestToggleMode = () => _modeManager?.ToggleMode();
             _modeManager.SetDockWindow(_dockWindow);
 
             _settingsWindow = new SettingsWindow(_config, _modeManager, _dockWindow, _taskbar);
